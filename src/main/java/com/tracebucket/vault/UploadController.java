@@ -8,9 +8,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -35,12 +32,11 @@ public class UploadController {
     }
 
     @RequestMapping(method=RequestMethod.POST)
-    public @ResponseBody String handleFileUpload(@RequestParam("name") String name,
-                                                 @RequestParam("file") MultipartFile file){
+    public @ResponseBody String handleFileUpload(@RequestParam("file") MultipartFile file) throws Exception{
         UUID filePointer = null;
         if (!file.isEmpty()) {
             try {
-                filePointer = storage.saveFile(name, file.getBytes());
+                filePointer = storage.saveFile(file);
                 return filePointer.toString();
             } catch (IOException e) {
                 e.printStackTrace();

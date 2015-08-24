@@ -19,7 +19,6 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import static org.apache.commons.io.FileUtils.ONE_GB;
-import static org.apache.commons.io.FileUtils.ONE_MB;
 import static org.springframework.http.HttpStatus.*;
 
 public class ExistingFile {

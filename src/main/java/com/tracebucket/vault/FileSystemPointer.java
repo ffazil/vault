@@ -5,6 +5,10 @@ import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import com.google.common.net.MediaType;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MimeType;
+import org.apache.tika.mime.MimeTypeException;
 
 import java.io.*;
 import java.time.Instant;
@@ -83,4 +87,23 @@ public class FileSystemPointer implements FilePointer {
 	public boolean modifiedAfter(Instant clientTime) {
 		return !clientTime.isBefore(getLastModified());
 	}
+
+    @Override
+    public String getFileExtension() throws IOException, MimeTypeException {
+        if(target != null) {
+            InputStream inputStream = new BufferedInputStream(new FileInputStream(target));
+            TikaConfig config = TikaConfig.getDefaultConfig();
+            org.apache.tika.mime.MediaType mediaType = config.getMimeRepository().detect(inputStream, new Metadata());
+            MimeType mimeType = config.getMimeRepository().forName(mediaType.toString());
+            return mimeType.getExtension();
+        }
+        return null;
+    }
+
+    public static String getFileExtension(BufferedInputStream inputStream) throws IOException, MimeTypeException {
+        TikaConfig config = TikaConfig.getDefaultConfig();
+        org.apache.tika.mime.MediaType mediaType = config.getMimeRepository().detect(inputStream, new Metadata());
+        MimeType mimeType = config.getMimeRepository().forName(mediaType.toString());
+        return mimeType.getExtension();
+    }
 }
