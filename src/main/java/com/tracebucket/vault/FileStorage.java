@@ -5,4 +5,5 @@ import java.util.UUID;
 
 public interface FileStorage {
 	Optional<FilePointer> findFile(UUID uuid);
+	UUID saveFile(String filename, byte[] content);
 }
