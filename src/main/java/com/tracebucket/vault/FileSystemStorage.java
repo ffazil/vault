@@ -34,6 +34,8 @@ public class FileSystemStorage implements FileStorage {
     @Value("${vault.dbFile}")
     private String dbFile;
 
+    DB db = null;
+
     private ConcurrentNavigableMap<String, String> register = null;
 
 
@@ -73,9 +75,11 @@ public class FileSystemStorage implements FileStorage {
             stream.write(file.getBytes());
             stream.close();
             register.put(uuid.toString(), findAbsoultPath(filename));
+            db.commit();
             return uuid;
         } catch (Exception e) {
             log.error("You failed to upload " + filename + " => " + e.getMessage());
+            db.rollback();
             return null;
         }
     }
@@ -101,7 +105,7 @@ public class FileSystemStorage implements FileStorage {
                     throw new IOException("Could Not Create DB File");
                 }
             }
-            DB db = DBMaker.fileDB(new File(this.dbFile))
+             db = DBMaker.fileDB(new File(this.dbFile))
                     .closeOnJvmShutdown()
                     .make();
 
