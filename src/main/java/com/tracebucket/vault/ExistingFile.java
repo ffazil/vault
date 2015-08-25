@@ -28,11 +28,17 @@ public class ExistingFile {
 	private final HttpMethod method;
 	private final FilePointer filePointer;
 	private final UUID uuid;
+    private String contextPath;
 
-	public ExistingFile(HttpMethod method, FilePointer filePointer, UUID uuid) {
+	public ExistingFile(String contextPath, HttpMethod method, FilePointer filePointer, UUID uuid) {
 		this.method = method;
 		this.filePointer = filePointer;
 		this.uuid = uuid;
+        if(contextPath == null) {
+            this.contextPath = "";
+        } else {
+            this.contextPath = contextPath;
+        }
 	}
 
 	public ResponseEntity<Resource> redirect(Optional<String> requestEtagOpt, Optional<Date> ifModifiedSinceOpt) {
@@ -67,7 +73,7 @@ public class ExistingFile {
 			log.trace("Redirecting {} '{}'", method, filePointer);
 			return ResponseEntity
 					.status(MOVED_PERMANENTLY)
-					.location(new URI("/download/" + uuid + "/" + filePointer.getOriginalName()))
+					.location(new URI(contextPath+"/download/" + uuid + "/" + filePointer.getOriginalName()))
 					.body(null);
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException(e);

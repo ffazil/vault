@@ -1,6 +1,7 @@
 package com.tracebucket.vault;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,9 @@ import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
 public class DownloadController {
 
 	private final FileStorage storage;
+
+    @Value(value = "${server.contextPath}")
+    private String contextPath;
 
 	@Autowired
 	public DownloadController(FileStorage storage) {
@@ -57,7 +61,7 @@ public class DownloadController {
 	private Optional<ExistingFile> findExistingFile(HttpMethod method, @PathVariable UUID uuid) {
 		return storage
 				.findFile(uuid)
-				.map(pointer -> new ExistingFile(method, pointer, uuid));
+				.map(pointer -> new ExistingFile(contextPath, method, pointer, uuid));
 	}
 
 }
