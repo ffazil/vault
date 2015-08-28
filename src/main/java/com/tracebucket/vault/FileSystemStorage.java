@@ -160,9 +160,12 @@ public class FileSystemStorage implements FileStorage {
     }
 
     private String findAbsoultPath(String filename){
-        return baseDirectory + "/" + filename;
+        if(this.baseDirectory != null && !this.baseDirectory.equals("null")) {
+            return baseDirectory + "/" + filename;
+        } else if(this.baseDirectory != null && this.baseDirectory.equals("null")) {
+            return this.userHome+"/vault/files/" + filename;
+        }
+        return null;
     }
-
-
 }
 
