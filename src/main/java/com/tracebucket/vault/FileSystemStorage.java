@@ -123,6 +123,8 @@ public class FileSystemStorage implements FileStorage {
                 }
                 db = DBMaker.fileDB(new File(this.dbFile))
                         .closeOnJvmShutdown()
+                        .fileLockDisable()
+                        .fileLockHeartbeatEnable()
                         .make();
 
                 // open existing an collection (or create new)
@@ -137,6 +139,8 @@ public class FileSystemStorage implements FileStorage {
                 }
                 db = DBMaker.fileDB(new File(this.userHome+"/vault/db"))
                         .closeOnJvmShutdown()
+                        .fileLockDisable()
+                        .fileLockHeartbeatEnable()
                         .make();
 
                 // open existing an collection (or create new)
@@ -152,6 +156,8 @@ public class FileSystemStorage implements FileStorage {
             }
             db = DBMaker.fileDB(new File(this.userHome+"/vault/db"))
                     .closeOnJvmShutdown()
+                    .fileLockDisable()
+                    .fileLockHeartbeatEnable()
                     .make();
 
             // open existing an collection (or create new)
