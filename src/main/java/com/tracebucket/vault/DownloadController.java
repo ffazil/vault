@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,10 +27,7 @@ public class DownloadController {
 
 	private final FileStorage storage;
 
-    @Value(value = "${server.contextPath}")
-    private String contextPath;
-
-	@Autowired
+    @Autowired
 	public DownloadController(FileStorage storage) {
 		this.storage = storage;
 	}
@@ -39,9 +37,10 @@ public class DownloadController {
 			HttpMethod method,
 			@PathVariable UUID uuid,
 			@RequestHeader(IF_NONE_MATCH) Optional<String> requestEtagOpt,
-			@RequestHeader(IF_MODIFIED_SINCE) Optional<Date> ifModifiedSinceOpt
+			@RequestHeader(IF_MODIFIED_SINCE) Optional<Date> ifModifiedSinceOpt,
+			HttpServletRequest request
 			) {
-		return findExistingFile(method, uuid)
+		return findExistingFile(method, uuid, request.getContextPath())
 				.map(file -> file.redirect(requestEtagOpt, ifModifiedSinceOpt))
 				.orElseGet(() -> new ResponseEntity<>(NOT_FOUND));
 	}
@@ -51,14 +50,15 @@ public class DownloadController {
 			HttpMethod method,
 			@PathVariable UUID uuid,
 			@RequestHeader(IF_NONE_MATCH) Optional<String> requestEtagOpt,
-			@RequestHeader(IF_MODIFIED_SINCE) Optional<Date> ifModifiedSinceOpt
+			@RequestHeader(IF_MODIFIED_SINCE) Optional<Date> ifModifiedSinceOpt,
+			HttpServletRequest request
 			) {
-		return findExistingFile(method, uuid)
+		return findExistingFile(method, uuid, request.getContextPath())
 				.map(file -> file.handle(requestEtagOpt, ifModifiedSinceOpt))
 				.orElseGet(() -> new ResponseEntity<>(NOT_FOUND));
 	}
 
-	private Optional<ExistingFile> findExistingFile(HttpMethod method, @PathVariable UUID uuid) {
+	private Optional<ExistingFile> findExistingFile(HttpMethod method, @PathVariable UUID uuid, String contextPath) {
 		return storage
 				.findFile(uuid)
 				.map(pointer -> new ExistingFile(contextPath, method, pointer, uuid));
