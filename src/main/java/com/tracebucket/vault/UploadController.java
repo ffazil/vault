@@ -35,7 +35,7 @@ public class UploadController {
     }
 
     @RequestMapping(method=RequestMethod.POST)
-    public @ResponseBody FileReference handleFileUpload(@RequestParam("file") MultipartFile file) throws Exception {
+    public @ResponseBody FileReference handleFileUpload(@RequestParam(value = "file") MultipartFile file) throws Exception {
         UUID filePointer = null;
         if (!file.isEmpty()) {
             try {
