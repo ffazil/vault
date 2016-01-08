@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -74,10 +75,10 @@ public class FileSystemStorage implements FileStorage {
         UUID uuid = UUID.randomUUID();
         String filename = uuid.toString() + FileSystemPointer.getFileExtension(new BufferedInputStream(file.getInputStream()));
         try {
-            BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(new File(findAbsoultPath(filename))));
+            BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(new File(findAbsolutePath(filename))));
             stream.write(file.getBytes());
             stream.close();
-            register.put(uuid.toString(), findAbsoultPath(filename));
+            register.put(uuid.toString(), findAbsolutePath(filename));
             db.commit();
             return uuid;
         } catch (Exception e) {
@@ -85,6 +86,39 @@ public class FileSystemStorage implements FileStorage {
             db.rollback();
             return null;
         }
+    }
+
+    @Override
+    public UUID saveFile(File file) throws IOException, MimeTypeException {
+        UUID uuid = UUID.randomUUID();
+        String targetFileName = uuid.toString() + FileSystemPointer.getFileExtension(new BufferedInputStream(new FileInputStream(file.getAbsolutePath())));
+        try {
+            FileInputStream inputStream = new FileInputStream(file);
+            FileChannel inChannel = inputStream.getChannel();
+
+            File target = new File(findAbsolutePath(targetFileName));
+            FileOutputStream outputStream = new FileOutputStream(target);
+            FileChannel outChannel = outputStream.getChannel();
+
+            inChannel.transferTo(0, file.length(), outChannel);
+
+            inputStream.close();
+            outputStream.close();
+
+            register.put(uuid.toString(), findAbsolutePath(targetFileName));
+            db.commit();
+            return uuid;
+        } catch (Exception e) {
+            log.error("You failed to upload " + targetFileName + " => " + e.getMessage());
+            db.rollback();
+            return null;
+        }
+
+
+
+
+
+
     }
 
     public static String getFileExtension(InputStream inputStream) throws IOException, MimeTypeException {
@@ -127,7 +161,7 @@ public class FileSystemStorage implements FileStorage {
                         .fileLockHeartbeatEnable()
                         .make();
 
-                // open existing an collection (or create new)
+                // open an existing collection (or create new)
                 register = db.treeMap(dbName);
             } catch (Exception e) {
                 log.info("Could Not Create Vault DB Directory From Path Specified In Properties Files, Hence Creating It In Home Directory");
@@ -165,7 +199,7 @@ public class FileSystemStorage implements FileStorage {
         }
     }
 
-    private String findAbsoultPath(String filename){
+    private String findAbsolutePath(String filename){
         if(this.baseDirectory != null && !this.baseDirectory.equals("null")) {
             return baseDirectory + "/" + filename;
         } else if(this.baseDirectory != null && this.baseDirectory.equals("null")) {

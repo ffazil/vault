@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,5 +33,10 @@ public class FileStorageStub implements FileStorage {
     public UUID saveFile(MultipartFile file) throws IOException, MimeTypeException {
         return null;
     }
+
+	@Override
+	public UUID saveFile(File file) throws IOException, MimeTypeException {
+		return null;
+	}
 
 }

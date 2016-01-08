@@ -1,7 +1,6 @@
 package com.tracebucket.vault;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +39,8 @@ public class DownloadController {
 			@RequestHeader(IF_MODIFIED_SINCE) Optional<Date> ifModifiedSinceOpt,
 			HttpServletRequest request
 			) {
-		return findExistingFile(method, uuid, request.getContextPath())
+		String contextPath = extractContextPath(request);
+		return findExistingFile(method, uuid, contextPath)
 				.map(file -> file.redirect(requestEtagOpt, ifModifiedSinceOpt))
 				.orElseGet(() -> new ResponseEntity<>(NOT_FOUND));
 	}
@@ -53,9 +53,25 @@ public class DownloadController {
 			@RequestHeader(IF_MODIFIED_SINCE) Optional<Date> ifModifiedSinceOpt,
 			HttpServletRequest request
 			) {
-		return findExistingFile(method, uuid, request.getContextPath())
+		String contextPath = extractContextPath(request);
+
+		return findExistingFile(method, uuid, contextPath)
 				.map(file -> file.handle(requestEtagOpt, ifModifiedSinceOpt))
 				.orElseGet(() -> new ResponseEntity<>(NOT_FOUND));
+	}
+
+	private String extractContextPath(HttpServletRequest request) {
+		String protocol =  (request.getHeader("x-forwarded-proto") == null || request.getHeader("x-forwarded-proto").isEmpty())? "":request.getHeader("x-forwarded-proto");
+		String host =  (request.getHeader("x-forwarded-host") == null || request.getHeader("x-forwarded-host").isEmpty())? "":request.getHeader("x-forwarded-host");
+		String prefix = (request.getHeader("x-forwarded-prefix") == null || request.getHeader("x-forwarded-prefix").isEmpty())? "":request.getHeader("x-forwarded-prefix");
+
+		String contextPath = null;
+		if(!(protocol.isEmpty() && host.isEmpty() && prefix.isEmpty()))
+			//Append forwarded prefix in case of proxied request
+			contextPath = prefix + request.getContextPath();
+		else
+			contextPath = request.getContextPath();
+		return contextPath;
 	}
 
 	private Optional<ExistingFile> findExistingFile(HttpMethod method, @PathVariable UUID uuid, String contextPath) {

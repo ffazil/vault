@@ -1,8 +1,5 @@
 multipart:
   maxFileSize: 10240KB
   maxRequestSize: 10240KB
-vault:
-  baseDirectory: /home/scfs/vault/files
-  dbFile: /home/scfs/vaultdb
-server:
-  contextPath:
+logging:
+  level: INFO
